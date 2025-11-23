@@ -94,7 +94,7 @@ describe('PostsController', () => {
 
   describe('update', () => {
     it('should convert id to number and call service.update with id and dto', async () => {
-      const dto: UpdatePostDto = { title: 'updated' } as any;
+      const dto: UpdatePostDto = { title: 'updated' };
       const updated = { id: 3, ...dto };
       postsService.update.mockResolvedValueOnce(updated);
 

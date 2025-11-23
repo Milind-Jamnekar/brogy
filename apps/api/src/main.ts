@@ -18,4 +18,6 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
 }
-bootstrap();
+void (async () => {
+  await bootstrap();
+})();
