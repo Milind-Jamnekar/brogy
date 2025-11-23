@@ -42,5 +42,5 @@ export class FilterPostDto {
       return [value];
     }
   })
-  tags: Array<string>;
+  tags?: Array<string>;
 }

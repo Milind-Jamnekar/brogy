@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { FilterPostDto } from './dto/filter-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -10,7 +10,6 @@ import { Post } from './entities/post.entity';
 export class PostsService {
   constructor(
     @InjectRepository(Post) private postRepository: Repository<Post>,
-    @InjectDataSource() private dataSource: DataSource,
   ) {}
   create(createPostDto: CreatePostDto) {
     const post = this.postRepository.create(createPostDto);
@@ -18,36 +17,14 @@ export class PostsService {
     return this.postRepository.save(post);
   }
 
-  // async findAll({ title, from, to, published }: FilterPostDto) {
-  //   const qb = this.postRepository.createQueryBuilder('post');
-  //   if (title) {
-  //     qb.andWhere('post.title ILIKE :title', { title: `%${title}%` });
-  //   }
-
-  //   if (from) qb.andWhere('post.createdAt >= :from', { from: new Date(from) });
-  //   if (to) qb.andWhere('post.createdAt <= :to', { to: new Date(to) });
-
-  //   if (typeof published === 'boolean') {
-  //     qb.andWhere('post.published = :published', { published });
-  //   }
-
-  //   // const page = Math.max(1, filters.page || 1);
-  //   // const limit = Math.min(100, filters.limit || 10);
-
-  //   const [posts, total] = await qb.getManyAndCount();
-  //   return { meta: { total }, data: posts };
-
-  //   return this.postRepository.find();
-  // }
-
   async findAll({
-    title,
-    from,
-    to,
-    published,
-    page,
-    limit,
-    tags,
+    title = '',
+    from = '',
+    to = '',
+    published = '',
+    page = 1,
+    limit = 5,
+    tags = [],
   }: FilterPostDto) {
     const query = this.postRepository.createQueryBuilder('post');
 
@@ -70,8 +47,6 @@ export class PostsService {
     }
 
     if (Array.isArray(tags)) {
-      console.log(tags);
-
       query
         .andWhere('post.tags IS NOT NULL')
         .andWhere('post.tags && ARRAY[:...tags]', { tags });
@@ -81,10 +56,7 @@ export class PostsService {
     const limitNo = limit ?? 10;
 
     query.skip((pageNo - 1) * limitNo).take(limit);
-
     const [posts, total] = await query.getManyAndCount();
-    console.log('posts length', posts.length, 'total', total);
-
     return { meta: { total }, data: posts };
   }
 
